@@ -1,0 +1,47 @@
+客户流失规则:
+1. 用户注册超过6个月
+2. 6个月之内没有发生订单交易
+3. 最后一笔订单超过6个月
+
+
+sql-1:
+-- 判断用户注册是否超过6个月
+SELECT
+c.*
+FROM
+t_customer AS c
+WHERE
+c.is_valid = 1
+AND
+c.state=0
+AND
+DATE_ADD(c.create_date,INTERVAL 6 MONTH) < NOW()
+AND c.id NOT IN (
+	SELECT
+	co.cus_id
+	FROM
+	t_customer_order AS co
+	WHERE
+	co.is_valid = 1
+	AND
+	DATE_ADD(co.order_date,INTERVAL 6 MONTH)>NOW()
+)
+
+
+
+sql-2:
+    SELECT
+        c.*
+    FROM
+        t_customer c
+    WHERE
+        c.is_valid = 1 AND c.state = 0 AND DATE_ADD(c.create_date,INTERVAL 6 MONTH) < NOW()
+        AND NOT EXISTS
+        (
+          SELECT DISTINCT
+              co.cus_id
+          FROM
+              t_customer_order co
+          WHERE
+              c.id = co.cus_id AND DATE_ADD(co.order_date,INTERVAL 6 MONTH) >=NOW()
+        )

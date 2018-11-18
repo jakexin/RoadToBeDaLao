@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.shsxt.crm.dao.CustomerReprieveMapper" >
+  <resultMap id="BaseResultMap" type="com.shsxt.crm.po.CustomerReprieve" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="loss_id" property="lossId" jdbcType="INTEGER" />
+    <result column="measure" property="measure" jdbcType="VARCHAR" />
+    <result column="is_valid" property="isValid" jdbcType="INTEGER" />
+    <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="update_date" property="updateDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, loss_id, measure, is_valid, create_date, update_date
+  </sql>
+  <select id="queryById" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_customer_reprieve
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <insert id="save" parameterType="com.shsxt.crm.po.CustomerReprieve" >
+    insert into t_customer_reprieve
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="lossId != null" >
+        loss_id,
+      </if>
+      <if test="measure != null" >
+        measure,
+      </if>
+      <if test="isValid != null" >
+        is_valid,
+      </if>
+      <if test="createDate != null" >
+        create_date,
+      </if>
+      <if test="updateDate != null" >
+        update_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="lossId != null" >
+        #{lossId,jdbcType=INTEGER},
+      </if>
+      <if test="measure != null" >
+        #{measure,jdbcType=VARCHAR},
+      </if>
+      <if test="isValid != null" >
+        #{isValid,jdbcType=INTEGER},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateDate != null" >
+        #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="update" parameterType="com.shsxt.crm.po.CustomerReprieve" >
+    update t_customer_reprieve
+    <set >
+      <if test="lossId != null" >
+        loss_id = #{lossId,jdbcType=INTEGER},
+      </if>
+      <if test="measure != null" >
+        measure = #{measure,jdbcType=VARCHAR},
+      </if>
+      <if test="isValid != null" >
+        is_valid = #{isValid,jdbcType=INTEGER},
+      </if>
+      <if test="createDate != null" >
+        create_date = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateDate != null" >
+        update_date = #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <select id="queryByParams" parameterType="customerReprieveQuery" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from t_customer_reprieve
+    where is_valid=1
+    <if test="null!=lossId">
+      and loss_id = #{lossId}
+    </if>
+  </select>
+
+  <delete id="deleteBatch">
+    UPDATE t_customer_reprieve set is_valid=0 WHERE id in (
+    <foreach collection="array" separator="," index="index" item="item">
+      #{item}
+    </foreach>
+    )
+  </delete>
+
+  <!-- 查询服务比例 -->
+  <select id="queryCustomerServePer" resultType="map">
+    SELECT
+    cs.serve_type as name,
+    COUNT(cs.id) as value
+    FROM
+    t_customer_serve AS cs
+    GROUP BY
+    cs.serve_type
+  </select>
+
+  <!-- 查询客户构成 -->
+  <select id="queryCustomerGouCheng" resultType="int">
+    SELECT
+    COUNT(c.`name`)
+    FROM
+    t_customer AS c
+    RIGHT JOIN t_datadic AS d ON c.`level` = d.data_dic_value
+    WHERE
+    d.data_dic_name = '客户等级' AND
+    d.is_valid = 1
+    GROUP BY d.data_dic_value
+    ORDER BY
+    d.id
+  </select>
+
+
+</mapper>
